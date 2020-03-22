@@ -1,0 +1,20 @@
+FROM microsoft/aspnetcore-build:1.0
+ARG BUILD_CONFIGURATION=Debug
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+EXPOSE 80
+
+WORKDIR /src
+COPY ["src/MyHealth.API/MyHealth.API.csproj", "src/MyHealth.API/"]
+COPY ["src/MyHealth.Data/MyHealth.Data.csproj", "src/MyHealth.Data/"]
+COPY ["src/MyHealth.Model/MyHealth.Model.csproj", "src/MyHealth.Model/"]
+COPY ["src/MyHealth.Web/MyHealth.Web.csproj", "src/MyHealth.Web/"]
+
+RUN dotnet restore "src/MyHealth.Web/MyHealth.Web.csproj"
+COPY . .
+WORKDIR "/src/src/MyHealth.Web"
+RUN dotnet build "MyHealth.Web.csproj" -c $BUILD_CONFIGURATION
+
+RUN echo "exec dotnet run --no-build --no-launch-profile -c $BUILD_CONFIGURATION --" > /entrypoint.sh
+
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
